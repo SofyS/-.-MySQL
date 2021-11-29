@@ -143,10 +143,45 @@ INSERT INTO media VALUES (DEFAULT, 2, 3, 'doc.docx', 1024, DEFAULT);
 
 
 
+CREATE TABLE photo_types (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR (45) NOT NULL UNIQUE
+);
+
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2020_10_10');
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2021_02_20');
+
+SELECT * FROM photo_types;
 
 
+CREATE TABLE hobby (
+  hobby_id SERIAL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  body TEXT,
+  PRIMARY KEY(hobby_id, user_id),
+  FOREIGN KEY (hobby_id) REFERENCES users (id),
+  FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+INSERT INTO hobby VALUES (DEFAULT, 1,  'Я умею кататься на роликах');
+INSERT INTO hobby VALUES (DEFAULT, 2,  'Я занимаюсь плаванием');
+
+SELECT * FROM hobby;
 
 
+CREATE TABLE status (
+  id SERIAL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  body TEXT,
+  create_at DATETIME DEFAULT NOW(),
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+INSERT INTO status VALUES (DEFAULT, 1, 'Прекрасная погода', DEFAULT, DEFAULT);
+INSERT INTO status VALUES (DEFAULT, 2, 'Всем отличного настроения!', DEFAULT, DEFAULT);
+
+SELECT * FROM status;
 
 
 
