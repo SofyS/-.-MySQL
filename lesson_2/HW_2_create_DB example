@@ -1,0 +1,16 @@
+CREATE DATABASE example;
+
+USE example;
+
+CREATE TABLE users (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR (50) NOT NULL
+);
+
+INSERT INTO users 
+VALUES (1, 'Petya');
+
+INSERT INTO users (name)
+VALUES ( 'Ivan');
+
+SELECT * FROM users;
