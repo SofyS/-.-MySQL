@@ -1,0 +1,359 @@
+ALTER TABLE users ADD COLUMN passport_number VARCHAR (10);
+
+-- Изменим ее тип
+
+ALTER TABLE users MODIFY COLUMN passport_number VARCHAR (20);
+
+-- Переменуем колонку
+
+ALTER TABLE users RENAME COLUMN passport_number TO passport;
+
+-- Добавим индес
+ALTER TABLE users ADD INDEX passpotr_idx (passport);
+
+-- Удалим колонку
+ALTER TABLE users DROP COLUMN passport;
+
+-- ДОБАВЛЯЕМ ОГРАНИЧЕНИЯ, ЧТО ОТПРАВИТЕЬ ЗАПРОСА НА ДРУЖБН
+
+-- CHECK CONSTRAINT
+
+ALTER TABLE friend_requests ADD CONSTRAINT CHECK(from_user_id != to_user_id);
+
+-- Добавляем ограничение, что номер телефона должен состоять из 11
+-- символов и только цифр
+-- regex101.com
+
+ALTER TABLE users ADD CONSTRAINT CHECK(REGEXP_LIKE(phone, '^[0-9]{11}$'));
+
+/* C - Create =INSERT
+ * R - READ = SELECT
+ * U - Update = UPDATE
+ * D - Delete = DELETE
+ */
+
+DESCRIBE users;
+
+-- добавляем пользователя
+
+INSERT users (id, firstname, lastname, phone, email, password_hash, created_at, updated_at)
+VALUES (DEFAULT, 'Alex', 'Stepenov', '89211032377','alex@mail.ru','asdsdaasd',DEFAULT,DEFAULT);
+
+-- добавляем повторно того же пользователя, ошибка возникает
+INSERT IGNORE users (id, firstname, lastname, phone, email, password_hash, created_at, updated_at)
+VALUES (DEFAULT, 'Alex', 'Stepenov', '89211032377','alex@mail.ru','asdsdaasd',DEFAULT,DEFAULT);
+
+-- не указываем DEFAULT
+INSERT users (firstname, lastname, phone, email)
+VALUES ('Elena', 'Stepenova', '89211000077','elenax@mail.ru');
+
+-- не указываем колонки
+INSERT users
+VALUES (DEFAULT, 'Chris', 'Ivanov', '89211099000','ivanov@mail.ru','asdfgtn',DEFAULT,DEFAULT);
+
+INSERT INTO users (id, firstname, lastname, phone, email)
+VALUES (55, 'Jane', 'Kvanov', '89211099111','jane@mail.ru');
+
+-- пробуем добавить id меньше текущего
+INSERT INTO users (id, firstname, lastname, phone, email)
+VALUES (45, 'Jane', 'Night', '89211095555','janeN@mail.ru');
+
+-- добавляем несколько пользователей
+INSERT INTO users (firstname, lastname, phone, email)
+VALUES ('Igor', 'Petrov', '89161000000','igor@mail.ru'),
+('Oksana', 'Petrova', '89161000001','oksana@mail.ru');
+
+-- добавляем через SET
+INSERT INTO users
+SET firstname = 'Iren',
+    lastname = 'Sidorova',
+    phone = '89161000002',
+    email = 'iren@mail.ru';
+
+  -- добавляем через SELECT 
+INSERT INTO users (firstname, lastname, phone, email)
+SELECT name, surname, phone, email FROM test1.users;
+
+/* 
+ * SELECT
+ * 
+ */
+
+-- выбираем константы
+
+SELECT 1;
+
+SELECT 'HELLO WORLD';
+
+SELECT 10+10;
+
+-- выбираем все поля users
+SELECT * FROM users;
+
+-- выбираем только имена users
+SELECT firstname FROM users;
+
+-- выбираем только уникальные имена
+SELECT DISTINCT firstname FROM users;
+
+-- выбираем пользователей с именем Аноним
+SELECT * FROM users WHERE firstname = 'Аноним';
+
+-- выбираем пользователей с id больше или равно 85
+SELECT * FROM users WHERE id >=85;
+
+-- выбираем пользователей с id больше или равно 85 и меньше ил равно 100
+SELECT * FROM users WHERE id >=85 AND id <= 100;
+
+-- аналогично предыдущему запросу (между)
+SELECT * FROM users WHERE id BETWEEN 85 AND 100;
+
+-- выбираем колонки в указанном порядке
+SELECT lastname, firstname, phone FROM users;
+
+-- соединяем имя и фамилию в одной колонке
+SELECT CONCAT (lastname,' ', firstname), phone FROM users;
+
+-- соединяем имя и фамилию в одной колонке и сокращаем им до 1 буквы 
+SELECT CONCAT(lastname,' ', SUBSTR(firstname, 1, 1), '.'), phone FROM users;
+
+-- соединяем имя и фамилию в одной колонке и сокращаем им до 1 буквы и меняем название столбца (на красивое)
+SELECT CONCAT(lastname,' ', SUBSTR(firstname, 1, 1), '.') AS username, phone FROM users;
+SELECT CONCAT(lastname,' ', SUBSTR(firstname, 1, 1), '.') username, phone FROM users;
+
+-- сортировка по алфавиту по возрастанию
+SELECT lastname, firstname, phone FROM users ORDER BY lastname;
+
+-- сортировка по алфавиту по убыванию (я-а)
+SELECT lastname, firstname, phone FROM users ORDER BY lastname DESC;
+
+-- выбираем четырех пользователей
+SELECT * FROM users LIMIT 4;
+
+-- выбираем 5 пользователей, пропускаем первые 10
+SELECT * FROM users LIMIT 5 OFFSET 10;
+-- или
+SELECT * FROM users LIMIT 10, 5;
+
+-- выбираем пользователей, у которых нет hash пароля
+-- SELECT * FROM users WHERE password_hash = NULL;
+SELECT * FROM users WHERE password_hash IS NULL;
+
+-- выбираем пользователей, у которых есть hash пароля
+SELECT * FROM users WHERE password_hash IS NOT NULL;
+
+SELECT * FROM users  WHERE id > 70 AND id< 100 OR firstname= 'Екатерина';
+
+--  имя похоже
+SELECT * FROM users  WHERE firstname LIKE 'Екатерина';
+
+SELECT * FROM users  WHERE firstname LIKE '%ина';
+
+/*
+ * UPDATE
+ * 
+ */
+
+-- ДОБАВЛЯЕМ НЕСКОЛЬКО СООБЩЕНИЙ
+INSERT INTO messages (from_user_id, to_user_id, body)
+VALUES (45, 55, 'Hi!');
+
+INSERT INTO messages (from_user_id, to_user_id, body)
+VALUES (45, 55, 'I hate you!');
+
+SELECT * FROM messages;
+
+-- меняем текст сообщения
+UPDATE messages
+SET body = 'I love you!' 
+WHERE id = 5;
+
+-- меняем статус на сообщение доставлено
+UPDATE messages SET is_devievered = 1;
+
+/*
+
+DELETE 
+
+TRUNCATE
+
+*/
+
+SELECT * FROM users  WHERE lastname = 'Stepanov';
+
+DELETE FROM users  WHERE lastname = 'Stepanov';
+
+DELETE FROM users  WHERE id = 1;
+
+
+-- очистить таблицу TRUNCATE
+SELECT * FROM communities_users;
+
+TRUNCATE TABLE communities_users;
+
+-- Домашнее задание №4 п.1
+
+
+
+INSERT INTO messages VALUES (DEFAULT, 1, 2, 'Good luck!', DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO messages VALUES (DEFAULT, 4, 7, 'Hello', DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO messages VALUES (DEFAULT, 7, 4, 'Hi', DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO messages VALUES (DEFAULT, 4, 7, 'Where are you from?', DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO messages VALUES (DEFAULT, 7, 4, 'Moscow', DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO messages VALUES (DEFAULT, 1, 8, 'Hello, Chris', DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO messages VALUES (DEFAULT, 8, 1, 'Hi, Petya', DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO messages VALUES (DEFAULT, 1, 8, 'Where are you from?', DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO messages VALUES (DEFAULT, 8, 1, 'Moscow, and you ?', DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO messages VALUES (DEFAULT, 1, 8, 'Kirov', DEFAULT, DEFAULT, DEFAULT);
+INSERT INTO messages VALUES (DEFAULT, 55, 56, 'Good luck!', DEFAULT, DEFAULT, DEFAULT);
+
+SELECT * FROM messages;
+
+
+INSERT INTO communities VALUES (DEFAULT, 'Number2', ' I am number two', 2);
+INSERT INTO communities VALUES (DEFAULT, 'Number4', ' I am number four', 4);
+INSERT INTO communities VALUES (DEFAULT, 'Number7', ' I am number seven', 7);
+INSERT INTO communities VALUES (DEFAULT, 'Number8', ' I am number eight', 8);
+INSERT INTO communities VALUES (DEFAULT, 'Number45', ' I am number forty five', 45);
+INSERT INTO communities VALUES (DEFAULT, 'Number55', ' I am number fifty five', 55);
+INSERT INTO communities VALUES (DEFAULT, 'Number56', ' I am number fifty six', 56);
+INSERT INTO communities VALUES (DEFAULT, 'Number57', ' I am number fifty seven', 57);
+INSERT INTO communities VALUES (DEFAULT, 'Number58', ' I am number fifty eight', 58);
+INSERT INTO communities VALUES (DEFAULT, 'Number62', ' I am number sixty two', 62);
+INSERT INTO communities VALUES (DEFAULT, 'Number63', ' I am number sixty three', 63);
+
+SELECT * FROM communities;
+
+INSERT INTO communities_users VALUES (1,2);
+INSERT INTO communities_users VALUES (2,1);
+INSERT INTO communities_users VALUES (3,4);
+INSERT INTO communities_users VALUES (4,7);
+INSERT INTO communities_users VALUES (5,8);
+INSERT INTO communities_users VALUES (6,45);
+INSERT INTO communities_users VALUES (7,55);
+INSERT INTO communities_users VALUES (8,56);
+INSERT INTO communities_users VALUES (9,57);
+INSERT INTO communities_users VALUES (10,58);
+INSERT INTO communities_users VALUES (11,62);
+INSERT INTO communities_users VALUES (12,63);
+
+SELECT * FROM communities_users;
+
+INSERT INTO friend_requests VALUES (2, 4, 2);
+INSERT INTO friend_requests VALUES (57, 55, 57);
+INSERT INTO friend_requests VALUES (62, 4, 62);
+INSERT INTO friend_requests VALUES (8, 7, 8);
+INSERT INTO friend_requests VALUES (58, 1, 58);
+INSERT INTO friend_requests VALUES (57, 2, 57);
+INSERT INTO friend_requests VALUES (45, 7, 45);
+INSERT INTO friend_requests VALUES (4, 8, 4);
+INSERT INTO friend_requests VALUES (7, 8, 7);
+INSERT INTO friend_requests VALUES (62, 63, 62);
+INSERT INTO friend_requests VALUES (55, 8, 55);
+
+SELECT * FROM friend_requests;
+
+INSERT INTO hobby VALUES (DEFAULT, 4,  'Я занимаюсь танцами');
+INSERT INTO hobby VALUES (DEFAULT, 7,  'Я занимаюсь рисованием');
+INSERT INTO hobby VALUES (DEFAULT, 8,  'Я занимаюсь гимнастикой');
+INSERT INTO hobby VALUES (DEFAULT, 45,  'Я занимаюсь прыжками в длину');
+INSERT INTO hobby VALUES (DEFAULT, 55,  'Я занимаюсь пением');
+INSERT INTO hobby VALUES (DEFAULT, 56,  'Я занимаюсь легкой атлетикой');
+INSERT INTO hobby VALUES (DEFAULT, 57,  'Я играю на гитаре');
+INSERT INTO hobby VALUES (DEFAULT, 58,  'Я занимаюсь прыжками с парашютом');
+INSERT INTO hobby VALUES (DEFAULT, 62,  'Я занимаюсь скандинавской ходьбой');
+INSERT INTO hobby VALUES (DEFAULT, 63,  'Я занимаюсь бальными танцами');
+INSERT INTO hobby VALUES (DEFAULT, 64,  'Я занимаюсь хоровым пением');
+
+SELECT * FROM hobby;
+
+INSERT INTO media VALUES (DEFAULT, 4, 4, 'im4.jpg', 100, DEFAULT);
+INSERT INTO media VALUES (DEFAULT, 7, 5, 'im5.jpg', 100, DEFAULT);
+INSERT INTO media VALUES (DEFAULT, 8, 6, 'im6.jpg', 100, DEFAULT);
+INSERT INTO media VALUES (DEFAULT, 8, 7, 'doc8.doc', 100, DEFAULT);
+INSERT INTO media VALUES (DEFAULT, 45, 8, 'im45.jpg', 100, DEFAULT);
+INSERT INTO media VALUES (DEFAULT, 55, 9, 'video55.mp4', 100, DEFAULT);
+INSERT INTO media VALUES (DEFAULT, 55, 10, 'im55.jpg', 100, DEFAULT);
+INSERT INTO media VALUES (DEFAULT, 56, 11, 'im56.jpg', 100, DEFAULT);
+INSERT INTO media VALUES (DEFAULT, 57, 12, 'im57.jpg', 100, DEFAULT);
+INSERT INTO media VALUES (DEFAULT, 57, 13, 'doc57.doc', 100, DEFAULT);
+INSERT INTO media VALUES (DEFAULT, 58, 14, 'video58.mp4', 100, DEFAULT);
+
+ SELECT * FROM media;
+
+INSERT INTO media_types VALUES (DEFAULT, 'изображение');
+INSERT INTO media_types VALUES (DEFAULT, 'изображение');
+INSERT INTO media_types VALUES (6, 'изображение');
+INSERT INTO media_types VALUES (DEFAULT, 'документ');
+INSERT INTO media_types VALUES (DEFAULT, 'изображение');
+INSERT INTO media_types VALUES (DEFAULT, 'видео');
+INSERT INTO media_types VALUES (DEFAULT, 'изображение');
+INSERT INTO media_types VALUES (DEFAULT, 'изображение');
+INSERT INTO media_types VALUES (DEFAULT, 'изображение');
+INSERT INTO media_types VALUES (DEFAULT, 'документ');
+INSERT INTO media_types VALUES (DEFAULT, 'видео');
+  
+ SELECT * FROM media_types;
+
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2021_10_11');
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2000_01_03');
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2002_03_05');
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2007_07_15');
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2008_08_18');
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2019_04_25');
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2018_07_20');
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2015_09_19');
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2010_10_10');
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2021_11_11');
+INSERT INTO photo_types VALUES (DEFAULT, 'photo_2003_03_13');
+
+SELECT id, name FROM photo_types ORDER BY id;
+
+SELECT * FROM photo_types;
+
+INSERT INTO profiles VALUES (4, 'm', '1987-12-15', 4, 'Moscow', 'Russia');
+INSERT INTO profiles VALUES (7, 'f', '1987-12-15', 5, 'Moscow', 'Russia');
+INSERT INTO profiles VALUES (8, 'm', '1997-02-05', 6, 'Kirov', 'Russia');
+INSERT INTO profiles VALUES (45, 'f', '1979-03-10', 7, 'Moscow', 'Russia');
+INSERT INTO profiles VALUES (55, 'm', '2000-09-12', 8, 'Kiev', 'Ukraine');
+INSERT INTO profiles VALUES (56, 'm', '1975-03-05', 9, 'Moscow', 'Russia');
+INSERT INTO profiles VALUES (57, 'f', '1976-10-07', 10, 'Chechov', 'Russia');
+INSERT INTO profiles VALUES (58, 'f', '1980-08-19', 11, 'Bryansk', 'Russia');
+INSERT INTO profiles VALUES (62, 'm', '2001-05-24', 12, 'Stavropol', 'Russia');
+INSERT INTO profiles VALUES (63, 'f', '2004-07-13', 13, 'Moscow', 'Russia');
+INSERT INTO profiles VALUES (64, 'f', '1995-04-12', 14, 'Moscow', 'Russia');
+
+SELECT * FROM profiles;
+
+INSERT INTO status VALUES (DEFAULT, 4, 'Всем привет!', DEFAULT, DEFAULT);
+INSERT INTO status VALUES (DEFAULT, 7, 'Всем прекрасного настроения!', DEFAULT, DEFAULT);
+INSERT INTO status VALUES (DEFAULT, 8, 'Хороших выходных!', DEFAULT, DEFAULT);
+INSERT INTO status VALUES (DEFAULT, 45, 'Доброе утро!', DEFAULT, DEFAULT);
+INSERT INTO status VALUES (DEFAULT, 55, 'Спокойной ночи!', DEFAULT, DEFAULT);
+INSERT INTO status VALUES (DEFAULT, 56, 'В отпуске!', DEFAULT, DEFAULT);
+INSERT INTO status VALUES (DEFAULT, 57, 'На море!', DEFAULT, DEFAULT);
+INSERT INTO status VALUES (DEFAULT, 58, 'Очень холодно, одевайтесь тепло!', DEFAULT, DEFAULT);
+INSERT INTO status VALUES (DEFAULT, 62, 'Всем отличного настроения!', DEFAULT, DEFAULT);
+INSERT INTO status VALUES (DEFAULT, 63, 'На работе!', DEFAULT, DEFAULT);
+INSERT INTO status VALUES (DEFAULT, 64, 'На обеде!', DEFAULT, DEFAULT);
+
+SELECT * FROM status;
+
+
+-- Написать скрипт, возвращающий список имен (только firstname) пользователей без повторений в алфавитном порядке
+
+SELECT DISTINCT firstname FROM users ORDER BY firstname;
+
+-- Написать скрипт, отмечающий несовершеннолетних пользователей как неактивных (поле is_active = false). 
+-- Предварительно добавить такое поле в таблицу profiles со значением по умолчанию = true (или 1)
+
+ALTER TABLE profiles ADD COLUMN is_active bit DEFAULT 1;
+
+-- SELECT * FROM profiles WHERE birthday > {d'2003-12-15'};
+UPDATE profiles SET is_active=0 WHERE birthday > {d'2003-12-15'};
+
+SELECT * FROM profiles;
+
+
+-- Написать скрипт, удаляющий сообщения «из будущего» (дата больше сегодняшней)
+SELECT * FROM messages WHERE create_at > CURRENT_DATE();
